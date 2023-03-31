@@ -16,7 +16,11 @@
         <!-- <link href="{{ url_for('static', filename='dist/css/styles.css') }}" rel="stylesheet" /> -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+        <script src="/static/utils/vue-spinner.js"></script>
+        <script>
+          var PulseLoader = VueSpinner.PulseLoader
+        </script>
         <script>
             function pressed(e) {
                 // Has the enter key been pressed?
@@ -32,13 +36,13 @@
     </head>
     <body id="page-top" >
 
-        <div id="app" class="flex flex-col  h-screen w-screen overflow-y-auto" style="background-image: url('/static/assets/new.png')">
+        <div id="app" class="flex flex-col  h-screen w-screen overflow-y-auto" style="background-image: url('/static/assets/background.png')">
             <!-- Header -->
-            <div class="sticky top-0 z-40 w-auto backdrop-blur flex-none transition-colors duration-500 lg:z-50  supports-backdrop-blur:bg-white/60">
+            <div class="h-[10%]sticky top-0 z-40 w-auto backdrop-blur flex-none transition-colors duration-500 lg:z-50  supports-backdrop-blur:bg-white/60">
                 <div class="max-w-8xl mx-auto">
                     <div class=" border-2 border-slate-400/10 lg:border-0 mx-4 lg:mx-0">
                         <div class="relative flex items-center">
-                            <a class="mt-2 mr-3 flex overflow-hidden md:w-auto items-center" href="/">
+                            <a class="mt-2 mx-2 flex overflow-hidden md:w-auto items-center" href="/">
                                 <img class="h-8 w-40 logo" src="/static/assets/logo.png">
                             </a>
                             <div class="relative hidden lg:flex items-center ml-auto ">
@@ -51,58 +55,42 @@
                 </div>
             </div>
             <!-- Main Chat -->
-
-            <div class="flex flex-col chat-box w-full h-full">
+            <div class="flex flex-col chat-box w-full h-[90%]">
                 
                 <div class="flex flex-col box-border h-[10%] w-100% justify-center items-center">
-                    <h2 class="text-base">Simple Chat to GPT-2 </h2>
+                    <h1 class="text-lg">GPT-neo Chatbot</h1>
                 </div>
-
+                <!-- ChatWindow -->
                 <div class="h-[70%] overflow-y-scroll overflow-x-hidden px-10 py-3 " id="chatWindow">
                     <ul class="flex-auto  font-sans text-base">
-                    <div>
-                        {% for demo in demo_list %}
-                            {% if type_list[demo_list.index(demo)] == "1" %}
-                            <li class="relative min-h-[68px] text-right">
-                                <div class="whitespace-normal px-5 bg-blue-300 bg-opacity-50 inline-block align-top rounded-lg break-all" >
-                                {{ demo }}
-                                </div>
+                        <div v-for="item in conversation" :key="item.type">
+                            <li v-if="item.type==1" class="relative min-h-[68px] text-right">
+                              <div class="whitespace-normal px-5 bg-blue-300 bg-opacity-50 inline-block align-top rounded-lg break-all" >[[item.content]]</div>
                             </li>
-                            {% elif type_list[demo_list.index(demo)] == "2" %}
-                            <li  class="relative min-h-[68px] text-left">
-                                <div class="whitespace-pre-line px-5 bg-gray-300 inline-block bg-opacity-75 rounded-lg ">{{ demo }}</div>
+                            <li v-else-if="item.type===2 " class="relative min-h-[68px] text-left">
+                              <div class="whitespace-pre-line px-5 bg-gray-300 inline-block bg-opacity-75 rounded-lg ">[[item.content]]</div>
                             </li>
-                            {% endif %}
-
-                        {% endfor %}
-                    </div>
-
+                          </div>
+                        <!-- loading -->
+                        <div v-show="this.isLoading == true" class="flex bg-gray-300 text-left w-16 items-center justify-center rounded-lg pt-1 mt-2">
+                            <pulse-loader></pulse-loader>
+                        </div>
                     </ul>
                 </div>
 
-
-
-
-                <div class="h-[10%] border-black px-10 py-5  bottom-0">
+                <div class="h-[20%] border-black px-10 py-5  bottom-0">
                     <div class="flex px-3 py-2 rounded-lg border-black ">
                       <textarea class="flex resize-none w-full border-2 border-gray-400 mx-2 my-2 rounded-lg" 
-                                placeholder="Hi, you can ask me anything here to chat with me~" @keypress.enter.prevent="query"  @keydown.enter.shift.exact.prevent="input += '\n'"
-                                v-model="input"></textarea>
-                      <button class="bg-blue-200 my-3 rounded-lg px-1" v-on:click="query">[[title_]]</button>
+                                placeholder="Hi, you can ask me anything here to chat with me~" @keypress.enter.prevent="query"  @keydown.enter.shift.exact.prevent="user_input += '\n'"
+                                v-model="user_input"></textarea>
+                      <button class="bg-blue-200 my-3 rounded-lg px-1" v-on:click="query">chat</button>
                     </div>
-                  </div>
+                </div>
                 
             </div>
 
 
         </div>
-
-
-
-
-
-
-
 
     </body>
     <script>
@@ -111,45 +99,51 @@
         createApp({
         data() {
             return {
-            message: 'Hello Vue!',
-            title_:"Bgein",
+                user_input: "",
+                conversation: [
+                        {
+                            type: 2,
+                            name: 'Your Assistant',
+                            content: 'Welcome to chat with me !',
+                        }
+                    ],
+                isLoading: false
             }
+        },
+        components: {
+             PulseLoader
         },
         delimiters: ['[[', ']]'],
         methods:{
-
-            async query() {
-                console.log("mnb")
-                fetch('http://localhost:8888/',
-                {method:"POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({'user_input' : 'this is input'}),
-                }) 
-                // .then(response => { 
-                //     // console.log(response)
-                //     // console.log(response.json())
-                //     // this.message = response.json()
-                //     const reader = response.body.getReader() 
-                //     const decoder = new TextDecoder()
-
-                //     const read = () => { 
-                //         reader.read().then(res => {
-                //             const chunk = decoder.decode(res.value || new Uint8Array(), {stream: !res.done}) 
-                //             this.message= this.message+ chunk
-                //             // console.log(this.conversation)
-                //             // console.log(chunk) // do something with the chunk of data received 
-
-                //             if(!res.done) read() 
-                //         })
-                //     }
-                //     read() 
-                // })
+            query() {
+                if(this.user_input == "") {
+                    alert("Your input is empty")
+                    return 0
+                }
+                this.isLoading = true
+                this.conversation.push({
+                type:1,
+                name: 'User',
+                content: this.user_input
+                })
+                axios.post('/predict', 
+                            {'History': this.conversation, 'Input' : this.user_input})
+                            .then(response => {
+                                console.log(response.data)
+                                this.conversation.push({
+                                type:2,
+                                name: 'Your Assistant',
+                                content: response.data,
+                                })
+                                this.isLoading = false
+                                this.user_input = ""
+                })
+                
             }
         },
-        mounted(){
-            this.title_ = document.title_variable
+        updated(){
+          let ele = document.getElementById('chatWindow');
+          ele.scrollTop = ele.scrollHeight;
         }
 
         }).mount('#app')
