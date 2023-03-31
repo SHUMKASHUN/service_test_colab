@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>{{title_variable}}</title>
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='dist/assets/favicon.ico') }}" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <!-- <link href="{{ url_for('static', filename='dist/css/styles.css') }}" rel="stylesheet" /> -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <script>
+            function pressed(e) {
+                // Has the enter key been pressed?
+                if ( (window.event ? event.keyCode : e.which) == 13) { 
+                    // If it has been so, manually submit the <form>
+                    document.forms[0].submit();
+                    
+                }
+            }
+
+        </script>
+
+    </head>
+    <body id="page-top" >
+
+        <div id="app" class="flex flex-col  h-screen w-screen overflow-y-auto" style="background-image: url('/static/assets/new.png')">
+            <!-- Header -->
+            <div class="sticky top-0 z-40 w-auto backdrop-blur flex-none transition-colors duration-500 lg:z-50  supports-backdrop-blur:bg-white/60">
+                <div class="max-w-8xl mx-auto">
+                    <div class=" border-2 border-slate-400/10 lg:border-0 mx-4 lg:mx-0">
+                        <div class="relative flex items-center">
+                            <a class="mt-2 mr-3 flex overflow-hidden md:w-auto items-center" href="/">
+                                <img class="h-8 w-40 logo" src="/static/assets/logo.png">
+                            </a>
+                            <div class="relative hidden lg:flex items-center ml-auto ">
+                                <nav class="text-base leading-6 font-semibold text-slate-700 items-center">
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+  
+                </div>
+            </div>
+            <!-- Main Chat -->
+
+            <div class="flex flex-col chat-box w-full h-full">
+                
+                <div class="flex flex-col box-border h-[10%] w-100% justify-center items-center">
+                    <h2 class="text-base">Simple Chat to GPT-2 </h2>
+                </div>
+
+                <div class="h-[70%] overflow-y-scroll overflow-x-hidden px-10 py-3 " id="chatWindow">
+                    <ul class="flex-auto  font-sans text-base">
+                    <div>
+                        {% for demo in demo_list %}
+                            {% if type_list[demo_list.index(demo)] == "1" %}
+                            <li class="relative min-h-[68px] text-right">
+                                <div class="whitespace-normal px-5 bg-blue-300 bg-opacity-50 inline-block align-top rounded-lg break-all" >
+                                {{ demo }}
+                                </div>
+                            </li>
+                            {% elif type_list[demo_list.index(demo)] == "2" %}
+                            <li  class="relative min-h-[68px] text-left">
+                                <div class="whitespace-pre-line px-5 bg-gray-300 inline-block bg-opacity-75 rounded-lg ">{{ demo }}</div>
+                            </li>
+                            {% endif %}
+
+                        {% endfor %}
+                    </div>
+
+                    </ul>
+                </div>
+
+
+
+
+                <div class="h-[10%] border-black px-10 py-5  bottom-0">
+                    <div class="flex px-3 py-2 rounded-lg border-black ">
+                      <textarea class="flex resize-none w-full border-2 border-gray-400 mx-2 my-2 rounded-lg" 
+                                placeholder="Hi, you can ask me anything here to chat with me~" @keypress.enter.prevent="query"  @keydown.enter.shift.exact.prevent="input += '\n'"
+                                v-model="input"></textarea>
+                      <button class="bg-blue-200 my-3 rounded-lg px-1" v-on:click="query">[[title_]]</button>
+                    </div>
+                  </div>
+                
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+
+
+    </body>
+    <script>
+        const { createApp } = Vue
+    
+        createApp({
+        data() {
+            return {
+            message: 'Hello Vue!',
+            title_:"Bgein",
+            }
+        },
+        delimiters: ['[[', ']]'],
+        methods:{
+
+            async query() {
+                console.log("mnb")
+                fetch('http://localhost:8888/',
+                {method:"POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({'user_input' : 'this is input'}),
+                }) 
+                // .then(response => { 
+                //     // console.log(response)
+                //     // console.log(response.json())
+                //     // this.message = response.json()
+                //     const reader = response.body.getReader() 
+                //     const decoder = new TextDecoder()
+
+                //     const read = () => { 
+                //         reader.read().then(res => {
+                //             const chunk = decoder.decode(res.value || new Uint8Array(), {stream: !res.done}) 
+                //             this.message= this.message+ chunk
+                //             // console.log(this.conversation)
+                //             // console.log(chunk) // do something with the chunk of data received 
+
+                //             if(!res.done) read() 
+                //         })
+                //     }
+                //     read() 
+                // })
+            }
+        },
+        mounted(){
+            this.title_ = document.title_variable
+        }
+
+        }).mount('#app')
+    </script>
+</html>
